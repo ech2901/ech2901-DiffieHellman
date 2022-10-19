@@ -12,16 +12,19 @@ def modp(base: int, exp: int, mod: int) -> int:
         exp = exp >> 1
     return base
 
-def perfect_square(c: int) -> bool:
-    n = floor(log2(c))+1
-    m = ceil(n/2)
+def perfect_square(value: int) -> bool:
+    # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+    # Appendix C section 4
+    # Checking for a perfect square algorithm
+    n = floor(log2(value)) + 1
+    exp = ceil(n/2)
 
-    diff = (2**m) - (2**(m-1))
-    x = randint(0, diff) + (2**(m-1))
+    diff = (2**exp) - (2**(exp-1))
+    witness = randint(0, diff) + (2**(exp-1))
 
     while True:
-        x = ((x**2)+c)/(2*x)
-        if (x**2) < ((2**m)+c):
+        witness = ((witness**2) + value) / (2 * witness)
+        if (witness**2) < ((2**exp) + value):
             break
 
-    return c == floor(x)**2
+    return value == floor(witness) ** 2
