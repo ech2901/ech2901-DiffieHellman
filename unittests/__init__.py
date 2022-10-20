@@ -2,7 +2,7 @@ from random import randint
 from unittest import TestCase, TestSuite
 from math import sqrt
 
-from DH import modp, perfect_square, miller_rabin
+from DH import decompose, modp, perfect_square, miller_rabin, jacobi
 
 iter_count = 10000
 
@@ -11,6 +11,12 @@ iter_count = 10000
 miller_rabin_iterations = 500
 miller_rabin_max_tests = 10_000
 
+class Decompose(TestCase):
+    def test_values(self):
+        for value in range(iter_count):
+            exp, m = decompose(value)
+            with self.subTest(f'{value=}, {exp=}, {m=}'):
+                self.assertEqual(value, (2**exp)*m)
 
 class MODP(TestCase):
     def test_iteration(self):
@@ -61,6 +67,11 @@ class MillerRabin(TestCase):
             with self.subTest(f'{a*b=}'):
                 verify = miller_rabin(a*b, miller_rabin_iterations)
                 self.assertFalse(verify)
+
+class Jacobi(TestCase):
+    def test_jacobi(self):
+        # TODO: Get more test vectors
+        self.assertEqual(-1, jacobi(5, 3439601197))
 
 
 if __name__ == '__main__':

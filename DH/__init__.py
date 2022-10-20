@@ -2,6 +2,18 @@ from math import floor, ceil, log2, gcd
 from random import randint
 from secrets import randbits
 
+
+def decompose(value: int) -> [int, int]:
+    # Decompose a value such that
+    # value = 2^n * m
+    if value in (1, 2):
+        return value-1, 1
+    if value == 0:
+        return 0, 0
+    exp = (value & (~(value-1))).bit_length()-1
+    m = value >> exp
+    return exp, m
+
 def modp(base: int, exp: int, mod: int) -> int:
     # Modular exponentiation function
     calculation = base
@@ -30,6 +42,29 @@ def perfect_square(value: int) -> bool:
 
     return value == floor(witness) ** 2
 
+def jacobi(a: int, n: int) -> int:
+    # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+    # Appendix C section 5
+    a = a % n
+    if a == 1 or n == 1:
+        return 1
+    if a == 0:
+        return 0
+
+    exp, a = decompose(a)
+
+    if exp % 2 == 0:
+        s = 1
+    elif (n % 8) == 1 or (n % 8) == 7:
+        s = 1
+    elif (n % 8) == 3 or (n % 8) == 5:
+        s = -1
+    if (n % 4) == 3 and (a % 4) == 3:
+        s = -s
+
+    n = n % a
+    return s * jacobi(n, a)
+
 def miller_rabin(prime: int, iterations: int) -> bool:
     # Miller-Rabin primality test
     # This has the possibility to have a bad witness
@@ -47,8 +82,7 @@ def miller_rabin(prime: int, iterations: int) -> bool:
 
     # Decompose prime to test into
     # expression: prime-1 = 2^exp * m
-    exp = (prime-1 & (~(prime-2))).bit_length()-1
-    m = (prime-1) >> exp
+    exp, m = decompose(prime-1)
     prime_bits = prime.bit_length()
 
     # Track witnesses so we can
