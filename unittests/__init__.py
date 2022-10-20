@@ -1,20 +1,28 @@
+from random import randint
 from unittest import TestCase, TestSuite
 from math import sqrt
 
-from DH import modp, perfect_square
+from DH import modp, perfect_square, miller_rabin
 
-iter_count = 100
+iter_count = 10000
+
+# Consensus is that 50 iterations has a very very very small
+# chance of a composite number causing a false positive.
+miller_rabin_iterations = 500
+miller_rabin_max_tests = 10_000
 
 
 class MODP(TestCase):
     def test_iteration(self):
-        for base in range(1, iter_count):
-            for exp in range(1, iter_count):
-                for mod in range(1, iter_count):
-                    with self.subTest(f'{base=}, {exp=}, {mod=}'):
-                        known = int(base**exp) % mod
-                        test = modp(base, exp, mod)
-                        self.assertEqual(test, known)
+        for _ in range(iter_count):
+            base = randint(1, iter_count)
+            exp = randint(1, iter_count)
+            mod = randint(1, iter_count)
+
+            with self.subTest(f'{base=}, {exp=}, {mod=}'):
+                known = int(base**exp) % mod
+                test = modp(base, exp, mod)
+                self.assertEqual(test, known)
 
 
 class PerfectSquare(TestCase):
@@ -29,6 +37,30 @@ class PerfectSquare(TestCase):
                 continue
             with self.subTest(f'{val=}'):
                 self.assertFalse(perfect_square(val))
+
+
+class MillerRabin(TestCase):
+    # First 100,000 known primes
+    # https://oeis.org/A000040/a000040.txt
+    with open('a000040.txt', 'r') as file:
+        known_primes = file.readlines()
+        known_primes = map(lambda line: line.split(' '), known_primes)
+        known_primes = map(lambda value: (int(value[0]), int(value[1])), known_primes)
+
+    def test_primes(self):
+        for index, prime in self.known_primes:
+            if index > miller_rabin_max_tests:
+                break
+            with self.subTest(f'{index=}, {prime=}'):
+                verify = miller_rabin(prime, miller_rabin_iterations)
+                self.assertTrue(verify)
+
+    def test_composites(self):
+        for _ in range(iter_count):
+            a, b = randint(2, 100), randint(2, 100)
+            with self.subTest(f'{a*b=}'):
+                verify = miller_rabin(a*b, miller_rabin_iterations)
+                self.assertFalse(verify)
 
 
 if __name__ == '__main__':

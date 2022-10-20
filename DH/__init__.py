@@ -1,5 +1,6 @@
-from math import floor, ceil, log2
+from math import floor, ceil, log2, gcd
 from random import randint
+from secrets import randbits
 
 def modp(base: int, exp: int, mod: int) -> int:
     # Modular exponentiation function
@@ -28,3 +29,49 @@ def perfect_square(value: int) -> bool:
             break
 
     return value == floor(witness) ** 2
+
+def miller_rabin(prime: int, iterations: int) -> bool:
+    # Miller-Rabin primality test
+    # This has the possibility to have a bad witness
+    # This would raise a false positive indicating a
+    # prime number for a composite number.
+    # Recommendation is to follow with a Lucas test to verify
+    # the primality.
+    # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+    # Appendix C Section 3.1
+    if prime in (1, 2, 3):
+        # Prevent infinite loop later
+        # A future check for 1 < witness < prime-1
+        # will infinite loop for values 1, 2, or 3
+        return True
+
+    # Decompose prime to test into
+    # expression: prime-1 = 2^exp * m
+    exp = (prime-1 & (~(prime-2))).bit_length()-1
+    m = (prime-1) >> exp
+    prime_bits = prime.bit_length()
+
+    # Track witnesses so we can
+    # guarantee unique tests
+    witness_list = list()
+
+    for _ in range(iterations):
+        while True:
+            witness = randbits(prime_bits)
+            if witness in witness_list:
+                continue
+            if 1 < witness < prime-1:
+                break
+        witness_list.append(witness)
+
+        test = modp(witness, m, prime)
+        if test == 1 or test == (prime-1):
+            return True
+        for _ in range(exp):
+            test = modp(test, 2, prime)
+            if test == prime-1:
+                return True
+            if test == 1:
+                break
+        return False
+    return True
