@@ -42,28 +42,37 @@ def perfect_square(value: int) -> bool:
 
     return value == floor(witness) ** 2
 
+def jacobi_iterator():
+    # Default sequence for jacobi 'a' value
+    val = 5
+    sign = 1
+    while True:
+        yield sign*val
+        val = val + 2
+        sign = sign * -1
+
 def jacobi(a: int, n: int) -> int:
     # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
     # Appendix C section 5
-    a = a % n
-    if a == 1 or n == 1:
-        return 1
-    if a == 0:
-        return 0
 
-    exp, a = decompose(a)
+    s = 1
+    while True:
+        a = a % n
+        print(a)
+        if a == 1 or n == 1:
+            break
+        if a == 0:
+            s = 0
+            break
+        exp, a = decompose(a)
+        if exp % 2 == 1 and (n % 8) in (3, 5):
+            s = -s
+        if (n % 4) == 3 and (a % 4) == 3:
+            s = -s
+        n = n % a
+        a, n = n, a
 
-    if exp % 2 == 0:
-        s = 1
-    elif (n % 8) == 1 or (n % 8) == 7:
-        s = 1
-    elif (n % 8) == 3 or (n % 8) == 5:
-        s = -1
-    if (n % 4) == 3 and (a % 4) == 3:
-        s = -s
-
-    n = n % a
-    return s * jacobi(n, a)
+    return s
 
 def miller_rabin(prime: int, iterations: int) -> bool:
     # Miller-Rabin primality test
