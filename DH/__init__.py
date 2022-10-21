@@ -54,25 +54,19 @@ def jacobi_iterator():
 def jacobi(a: int, n: int) -> int:
     # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
     # Appendix C section 5
-
     s = 1
     while True:
         a = a % n
-        print(a)
         if a == 1 or n == 1:
-            break
+            return s
         if a == 0:
-            s = 0
-            break
+            return 0
         exp, a = decompose(a)
         if exp % 2 == 1 and (n % 8) in (3, 5):
             s = -s
         if (n % 4) == 3 and (a % 4) == 3:
             s = -s
-        n = n % a
-        a, n = n, a
-
-    return s
+        a, n = n % a, a
 
 def miller_rabin(prime: int, iterations: int) -> bool:
     # Miller-Rabin primality test

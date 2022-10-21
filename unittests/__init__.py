@@ -69,9 +69,18 @@ class MillerRabin(TestCase):
                 self.assertFalse(verify)
 
 class Jacobi(TestCase):
+    vectors = (
+        (1236, 20003, 1),
+        (5, 3439601197, -1),
+        (42, 2005, 1),
+        (2462, 177541, -1)
+    )
     def test_jacobi(self):
         # TODO: Get more test vectors
-        self.assertEqual(-1, jacobi(5, 3439601197))
+
+        for a, n, expected in self.vectors:
+            with self.subTest(f'{a=}, {n=}, {expected=}'):
+                self.assertEqual(expected, jacobi(a, n))
 
 
 if __name__ == '__main__':
