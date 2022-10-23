@@ -1,5 +1,5 @@
 from random import randint
-from unittest import TestCase
+from unittest import TestCase, TestSuite
 from math import sqrt
 
 from DH import decompose, modp, perfect_square, miller_rabin, is_prime
@@ -80,7 +80,7 @@ class IsPrime(TestCase):
 
     def test_composites(self):
         for _ in range(iter_count):
-            a, b = randint(1, 1000), randint(1, 1000)
+            a, b = randint(2, 1000), randint(2, 1000)
             test_val = a*b
             with self.subTest(f'{a,b, test_val=}'):
                 self.assertFalse(is_prime(test_val))

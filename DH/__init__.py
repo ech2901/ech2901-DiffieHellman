@@ -54,6 +54,10 @@ def miller_rabin(prime: int, iterations: int) -> bool:
     # the primality.
     # https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
     # Appendix C Section 3.1
+    if iterations > (prime-3):
+        iterations = prime-3
+
+
     if prime in (1, 2, 3):
         # Prevent infinite loop later
         # A future check for 1 < witness < prime-1
@@ -84,10 +88,15 @@ def miller_rabin(prime: int, iterations: int) -> bool:
         for _ in range(exp):
             test = modp(test, 2, prime)
             if test == prime-1:
-                continue
-            if test == 1:
                 break
-        return False
+            if test == 1:
+                return False
+        else:
+            # If the for loop doesn't break or return anything, it's composite.
+            return False
+        # If the for loop breaks early, continue to the next iteration.
+        # This is not needed, but helps makes code clear
+        continue
     return True
 
 
@@ -95,6 +104,4 @@ def is_prime(prime: int, *, iterations: int = 96) -> bool:
     if prime % 2 == 0:
         return prime == 2
 
-    if iterations >= prime:
-        iterations = prime-1
     return miller_rabin(prime, iterations) and not perfect_square(prime)
