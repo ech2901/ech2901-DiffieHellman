@@ -1,16 +1,23 @@
 from random import randint
-from unittest import TestCase, TestSuite
+from unittest import TestCase
 from math import sqrt
 
-from DH import decompose, modp, perfect_square, miller_rabin, jacobi, lucas
+from DH import decompose, modp, perfect_square, miller_rabin, is_prime
 
-iter_count = 10000
+iter_count = 10_000
 
 # Consensus is that 50 iterations has a very very very small
 # chance of a composite number causing a false positive.
-miller_rabin_iterations = 50
+miller_rabin_iterations = 70
 
 max_tests = 10_000
+
+# First 100,000 known primes
+# https://oeis.org/A000040/a000040.txt
+with open('a000040.txt', 'r') as file:
+    known_primes = map(lambda line: line.split(' '), [file.readline() for _ in range(max_tests)])
+    known_primes = map(lambda value: (int(value[0]), int(value[1])), known_primes)
+known_primes = list(known_primes)
 
 class Decompose(TestCase):
     def test_values(self):
@@ -18,6 +25,7 @@ class Decompose(TestCase):
             exp, m = decompose(value)
             with self.subTest(f'{value=}, {exp=}, {m=}'):
                 self.assertEqual(value, (2**exp)*m)
+
 
 class MODP(TestCase):
     def test_iteration(self):
@@ -47,15 +55,9 @@ class PerfectSquare(TestCase):
 
 
 class MillerRabin(TestCase):
-    # First 100,000 known primes
-    # https://oeis.org/A000040/a000040.txt
-    with open('a000040.txt', 'r') as file:
-        known_primes = file.readlines()
-        known_primes = map(lambda line: line.split(' '), known_primes)
-        known_primes = map(lambda value: (int(value[0]), int(value[1])), known_primes)
 
     def test_known_primes(self):
-        for index, prime in self.known_primes:
+        for index, prime in known_primes:
             if index > max_tests:
                 break
             with self.subTest(f'{index=}, {prime=}'):
@@ -69,6 +71,19 @@ class MillerRabin(TestCase):
                 verify = miller_rabin(a**b, miller_rabin_iterations)
                 self.assertFalse(verify)
 
+
+class IsPrime(TestCase):
+    def test_known_primes(self):
+        for _, prime in known_primes:
+            with self.subTest(prime):
+                self.assertTrue(is_prime(prime))
+
+    def test_composites(self):
+        for _ in range(iter_count):
+            a, b = randint(1, 1000), randint(1, 1000)
+            test_val = a*b
+            with self.subTest(f'{a,b, test_val=}'):
+                self.assertFalse(is_prime(test_val))
 
 if __name__ == '__main__':
     pass

@@ -80,12 +80,21 @@ def miller_rabin(prime: int, iterations: int) -> bool:
 
         test = modp(witness, m, prime)
         if test == 1 or test == (prime-1):
-            return True
+            continue
         for _ in range(exp):
             test = modp(test, 2, prime)
             if test == prime-1:
-                return True
+                continue
             if test == 1:
                 break
         return False
     return True
+
+
+def is_prime(prime: int, *, iterations: int = 96) -> bool:
+    if prime % 2 == 0:
+        return prime == 2
+
+    if iterations >= prime:
+        iterations = prime-1
+    return miller_rabin(prime, iterations) and not perfect_square(prime)
